@@ -41,6 +41,7 @@ class Game:
                 self.mat[new[0]][new[1]] = 4
             else:
                 self.mat[new[0]][new[1]] = 2
+            return list(new)
 
     def turn(self, direct='a'):
         # Сдвиг
@@ -48,6 +49,7 @@ class Game:
         com_last = 0
         delta = 1
         end = self.width
+        new = []
         if direct in 'ds':
             com_last = self.width-1
             delta = -1
@@ -64,8 +66,11 @@ class Game:
                     if mat[i][last] == mat[i][j]:
                             mat[i][last] *= 2
                             mat[i][j] = 0
-                            last += delta
                             g = True
+                            if direct in 'ad':
+                                new.append((i,last))
+                            else: new.append((last,i))
+                            last += delta
                     else:
                         if mat[i][last]:
                             if last+delta != j: g = True
@@ -76,7 +81,7 @@ class Game:
                             mat[i][last], mat[i][j] = mat[i][j], 0
                             g = True
         if direct in 'ws': mat = self.copy_mat(mat,1)
-        return mat,g
+        return mat, g, new
 
     def check(self):
         self.avail_turns = ''
@@ -85,12 +90,12 @@ class Game:
 
     def make_turn(self,direct):
         if direct in self.avail_turns:
-            self.mat = self.turn(direct)[0]
-            self.new_cell()
+            self.mat, g, new = self.turn(direct)
+            k = self.new_cell()
             self.check()
-            return True
+            return True, new+[k]
         else:
-            return False
+            return False, []
 
     def show_board(self):
         for i in range(self.width):
